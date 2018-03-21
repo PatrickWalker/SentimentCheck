@@ -3,7 +3,8 @@ package main
 import (
     "github.com/ChimeraCoder/anaconda"
     "github.com/spf13/viper"
-    "github.com/cdipaolo/sentiment"
+    "github.com/SocialHarvest/sentiment"    
+    
     "fmt"
     "strings"
 )
@@ -46,42 +47,47 @@ func main(){
     TwitterSentimentAnalysis(res)
 }
 
-func bootstrapSentimentModel() sentiment.Models {
-    model, err := sentiment.Restore()
-    if err != nil {
-        panic(fmt.Sprintf("Could not restore model!\n\t%v\n", err))
-    }
-    return model
-}
 
 func TwitterSentimentAnalysis(sr anaconda.SearchResponse){
-    var res []*sentiment.Analysis
-    model :=  bootstrapSentimentModel()
+    neg :=   make([]string, 1)
+    pos :=   make([]string, 1)
+    an := sentiment.NewAnalyzer()   
     fmt.Println("Doing some result stuff")
     //Loop for more Tweets here
+    fmt.Printf("Got %v results \n", len(sr.Statuses))
     for _ , tweet := range sr.Statuses {
-        if !shouldIgnore(tweet.User.ScreenName){
+        if !shouldIgnore(tweet){
             //Should check the tweet language and switch/set the sentiment language
-            analysis := model.SentimentAnalysis(tweet.Text, sentiment.English)
-            res = append(res,analysis)
+            res := an.Classify(tweet.Text)
+            if res < 0 {
+                //Add to Negative
+               neg = append(neg,tweet.Text)
+            } else if res > 0 {
+                //Add to Positive
+               pos = append(pos,tweet.Text)
+            }
         }
 
     }
     //Got all these results now so what do we do. Well we analyze them of course..
-    analyzeSentimentResults(res)
+    analyzeSentimentResults(neg,pos)
 }
-func shouldIgnore(user string) bool{
-    _, ok := ignoreList[user]
-    return ok
+func shouldIgnore(tweet anaconda.Tweet) bool{
+    
+    _, ok := ignoreList[tweet.User.ScreenName]
+    
+    notEng := tweet.Lang != "en"
+    return ok || notEng
 
 }
 
 
-func analyzeSentimentResults(res []*sentiment.Analysis){
-    for _, sent := range res {
-         if sent.Score  == 0 {
-             fmt.Printf("Low Score For Statement %v \n ", sent.Sentences)
-         } 
-
+func analyzeSentimentResults(neg,pos []string){
+    for _, neg_val := range neg {
+        fmt.Println(neg_val)
+    }
+    fmt.Println("pOsitive")
+        for _, pos_val := range pos {
+        fmt.Println(pos_val)
     }
 }

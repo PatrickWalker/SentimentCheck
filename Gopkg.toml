@@ -31,7 +31,8 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/cdipaolo/sentiment"
+  name = "github.com/SocialHarvest/sentiment"
+
 
 [[constraint]]
   name = "github.com/spf13/viper"
@@ -40,3 +41,7 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/jbrukh/bayesian"
